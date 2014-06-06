@@ -1,4 +1,5 @@
-from DIRAC.TransformationSystem.Client.TransformationClient   import TransformationClient
+
+m DIRAC.TransformationSystem.Client.TransformationClient   import TransformationClient
 
 import random
 
@@ -17,23 +18,25 @@ class testJob:
         #
         # Si aggiungono rand(30,100) file alla trasformazione
         #
-        n_file = random.randint(30,100)
+        n_file = random.randint(1000,2000)
         lfns=[]
         # Si assembla il nome del file per generarli con nomi diversi
         for n in range( n_file ):
             st = str( n )
             lfns.append( "/aa/lfn." + st + ".txt" )
         res = transClient.addFilesToTransformation( transID, lfns )
+        #print res['Message']
         if res['OK']==True:
             print "**** Creati ",n_file," Files  ****"
         else:
             print "#### ERROR: File non creati ####"
+            print res['Message']
 
         #
         # Si aggiunge un task ogni rand(1,30) file
         #
         min = 0
-        max = random.randint(1,30)
+        max = random.randint(1,100)
         taskID = []
         n_task = 0
         while( max <= n_file ):
@@ -57,7 +60,7 @@ class testJob:
         #
         # Si setta lo stato dei primi rand(1,10) task a 'Status_Modified'
         #
-        rand = random.randint(1,10)
+        rand = random.randint(1,100)
         # Si controlla che il numero random sia minore del numero dei task, altrimenti se ne genera uno diverso
         while( rand > n_task ):
             rand = random.randint(1,10)
@@ -183,4 +186,3 @@ if __name__ == "__main__":
     print "\n"
     
     test.stepFive( transID )
-
