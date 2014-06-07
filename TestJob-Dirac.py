@@ -1,40 +1,42 @@
-
-m DIRAC.TransformationSystem.Client.TransformationClient   import TransformationClient
+from DIRAC.TransformationSystem.Client.TransformationClient   import TransformationClient
 
 import random
+import time
 
 class testJob:
     def stepOne( self ):
         #
-        # Si aggiunge una trasformazione
+        # Si aggiunge una Trasformazione
         #
         res = transClient.addTransformation( 'transName', 'description', 'longDescription', 'MCSimulation', 'Standard','Manual', '' )
         if res['OK']==True:
             print "**** Trasformazione creata ****"
         else:
             print "#### ERROR: Trasformazione non creata ####"
+            print res['Message']
         transID = res['Value']
     
         #
-        # Si aggiungono rand(30,100) file alla trasformazione
+        # Si aggiungono rand File alla Trasformazione
         #
         n_file = random.randint(1000,2000)
+        print "Sto creando ",n_file," File .... "
         lfns=[]
         # Si assembla il nome del file per generarli con nomi diversi
         for n in range( n_file ):
             st = str( n )
             lfns.append( "/aa/lfn." + st + ".txt" )
         res = transClient.addFilesToTransformation( transID, lfns )
-        #print res['Message']
         if res['OK']==True:
-            print "**** Creati ",n_file," Files  ****"
+            print "**** Creati ",n_file," File  ****"
         else:
             print "#### ERROR: File non creati ####"
             print res['Message']
 
         #
-        # Si aggiunge un task ogni rand(1,30) file
+        # Si aggiunge un Task ogni rand(1,100) file
         #
+        print "Sto creando i Task .... "
         min = 0
         max = random.randint(1,100)
         taskID = []
@@ -44,13 +46,14 @@ class testJob:
             res = transClient.addTaskForTransformation( transID, lfns_tmp )
             if res['OK']==False:
                 print "#### ERROR: Task non creato ####"
+                print res['Message']
             else:
                 n_task = n_task+1
             taskID.append( res['Value'] )
             rand = random.randint(0,30)
             min = max
             max = max + rand
-        print "**** Creati ",n_task," tasks ****"
+        print "**** Creati ",n_task," Tasks ****"
     
         return (transID, lfns, taskID, n_task, min, n_file)
 
@@ -58,31 +61,33 @@ class testJob:
 
     def stepTwo( self, transID, taskID, lfns, n_task ):
         #
-        # Si setta lo stato dei primi rand(1,10) task a 'Status_Modified'
+        # Si setta lo stato dei primi rand(1,100) Task a 'Status_Modified'
         #
         rand = random.randint(1,100)
-        # Si controlla che il numero random sia minore del numero dei task, altrimenti se ne genera uno diverso
+        # Si controlla che il numero random sia minore del numero dei Task, altrimenti se ne genera uno diverso
         while( rand > n_task ):
-            rand = random.randint(1,10)
+            rand = random.randint(1,100)
         status = "Status_Modified"
         taskID_tmp = taskID[0:rand] 
         res = transClient.setTaskStatus(transID, taskID_tmp, status)
         if res['OK']==True:
-            print "**** Stato di ",rand," task settato a '",status,"' ****"
+            print "**** Stato di ",rand," Task settato a '",status,"' ****"
         else:
-            print "#### ERROR: Stato del task non settato ####"
+            print "#### ERROR: Stato del Task non settato ####"
+            print res['Message']
 
         #
-        # Si setta lo stato dei primi rand(1,20) file a 'Status_Modified'
+        # Si setta lo stato dei primi rand(1,20) File a 'Status_Modified'
         #
         rand = random.randint(1,20)
         newLFNsStatus = "Status_Modified"
         lfns_tmp = lfns[0:rand]
         res = transClient.setFileStatusForTransformation( transID, newLFNsStatus, lfns_tmp )
         if res['OK']==True:
-            print "**** Stato dei primi ",rand," file settato a '",newLFNsStatus,"' ****"
+            print "**** Stato dei primi ",rand," File settato a '",newLFNsStatus,"' ****"
         else:
-            print "#### ERROR: Stato dei file non modificati ####"
+            print "#### ERROR: Stato dei File non modificati ####"
+            print res['Message']
 
 
     
@@ -94,45 +99,50 @@ class testJob:
         if res['OK']==True:
             statusTransf = res['Value']
         else:
-            print "#### ERROR: Stato della trasformazione impossibile da recuperare ####"
+            print "#### ERROR: Stato della Trasformazione impossibile da recuperare ####"
+            print res['Message']
 
         res = transClient.getTransformationTaskStats(transID)
         if res['OK']==True:
             statusTask = res['Value']
         else:
-            print "#### ERROR: Stato del task impossibile da recuperare ####"
+            print "#### ERROR: Stato del Task impossibile da recuperare ####"
+            print res['Message']
         print "Stato Trasformazione: ",statusTransf
         print "Stato Task: ",statusTask
 
         #
-        # Si cambia ancora lo stato di un file e si aggiunge una task
+        # Si cambia ancora lo stato di un File e si aggiunge una Task
         #
         newLFNsStatus = "Second_Modified"
         lfns_tmp = lfns[0:1]
         res = transClient.setFileStatusForTransformation( transID, newLFNsStatus, lfns_tmp )
         if res['OK']==True:
-            print "**** Stato di un file settato a '",newLFNsStatus,"' ****"
+            print "**** Stato di un File settato a '",newLFNsStatus,"' ****"
         else:
-            print "#### ERROR: Stato del file non modificato per la seconda volta ####"
+            print "#### ERROR: Stato del File non modificato per la seconda volta ####"
+            print res['Message']
         min = min + 1
         max = min + 1
         if (max <= n_file):
             lfns_tmp = lfns[min:max]
             res = transClient.addTaskForTransformation( transID, lfns_tmp )
         else:
-            # Si crea un file nuovo per creare la task
+            # Si crea un File nuovo per creare un Task
             st = str( max )
             lfns_tmp = ["/aa/lfn." + st + ".txt"]
             res = transClient.addFilesToTransformation( transID, lfns_tmp )
             if res['OK']==True:
-                print "**** Creato un nuovo file perche' non erano disponibili file per creare un nuovo task ****"
+                print "**** Creato un nuovo File perche' non erano disponibili file per creare un nuovo Task ****"
             else:
-                print "#### ERROR: File per aggiungere il task non creato ####"
+                print "#### ERROR: File per aggiungere il Task non creato ####"
+                print res['Message']
             res = transClient.addTaskForTransformation( transID, lfns_tmp )
         if res['OK']==True:
-            print "**** Aggiunto un task ****"
+            print "**** Aggiunto un Task ****"
         else:
             print "#### ERROR: Task non aggiunto ####"
+            print res['Message']
 
     def stepFour( self, transID ):
         res = transClient.cleanTransformation( transID )
@@ -140,6 +150,7 @@ class testJob:
             print "**** Clean Transformation ****"
         else:
             print "#### ERROR: Clean Transformation ####"
+            print res['Message']
 
 
 
@@ -152,6 +163,7 @@ class testJob:
             print "**** Trasformazione eliminata ****"
         else:
             print "#### ERROR: Trasformazione non eliminata ####"
+            print res['Message']
 
 
 
@@ -168,6 +180,7 @@ if __name__ == "__main__":
     print "\n"
 
     print "STEP 1"
+    tempo_iniziale = time.time()
     [transID, lfns, taskID, n_task, min, n_file] = test.stepOne( )
     print "TransID: ",transID
     print "TaskID: ", taskID
@@ -183,6 +196,12 @@ if __name__ == "__main__":
 
     print "STEP 4"
     test.stepFour( transID )
+    tempo_finale = time.time()
     print "\n"
     
     test.stepFive( transID )
+    
+    print "\n"
+    print "-------------------------------------------------------------"
+    print "Impiegati", str(tempo_finale - tempo_iniziale), "secondi per eseguire il job"
+    print "-------------------------------------------------------------"
