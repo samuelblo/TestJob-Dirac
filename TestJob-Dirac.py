@@ -1,3 +1,4 @@
+
 from DIRAC.TransformationSystem.Client.TransformationClient   import TransformationClient
 
 import random
@@ -171,6 +172,8 @@ class testJob:
 if __name__ == "__main__":
     transClient = TransformationClient()
     
+    tempo_tot=0
+
     test = testJob()
 
     print "\n"
@@ -182,26 +185,49 @@ if __name__ == "__main__":
     print "STEP 1"
     tempo_iniziale = time.time()
     [transID, lfns, taskID, n_task, min, n_file] = test.stepOne( )
+    tempo_finale = time.time()
     print "TransID: ",transID
     print "TaskID: ", taskID
+    print "-------------------------------------------------------------"
+    print "Impiegati", str(tempo_finale - tempo_iniziale), "secondi per eseguire lo step 1"
+    print "-------------------------------------------------------------"
+    tempo_tot=tempo_tot+(tempo_finale - tempo_iniziale)
     print "\n"
 
     print "STEP 2"
+    tempo_iniziale = time.time()
     test.stepTwo( transID, taskID, lfns, n_task )
+    tempo_finale = time.time()
+    print "-------------------------------------------------------------"
+    print "Impiegati", str(tempo_finale - tempo_iniziale), "secondi per eseguire lo step 2"
+    print "-------------------------------------------------------------"
+    tempo_tot=tempo_tot+(tempo_finale - tempo_iniziale)
     print "\n"
 
     print "STEP 3"
+    tempo_iniziale = time.time()
     test.stepThree( transID, lfns, min, n_file )
+    tempo_finale = time.time()
+    print "-------------------------------------------------------------"
+    print "Impiegati", str(tempo_finale - tempo_iniziale), "secondi per eseguire lo step 3"
+    print "-------------------------------------------------------------"
+    tempo_tot=tempo_tot+(tempo_finale - tempo_iniziale)
     print "\n"
 
     print "STEP 4"
+    tempo_iniziale = time.time()
     test.stepFour( transID )
     tempo_finale = time.time()
+    print "-------------------------------------------------------------"
+    print "Impiegati", str(tempo_finale - tempo_iniziale), "secondi per eseguire lo step 4"
+    print "-------------------------------------------------------------"
+    tempo_tot=tempo_tot+(tempo_finale - tempo_iniziale)    
     print "\n"
     
     test.stepFive( transID )
     
     print "\n"
     print "-------------------------------------------------------------"
-    print "Impiegati", str(tempo_finale - tempo_iniziale), "secondi per eseguire il job"
+    print "Impiegati", str(tempo_tot), "secondi per eseguire il job"
     print "-------------------------------------------------------------"
+
