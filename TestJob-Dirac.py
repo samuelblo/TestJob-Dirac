@@ -22,13 +22,23 @@ class stepOne(threading.Thread):
         self.time = [None]*3
         self.transName = "transName" + str(self.id)
         self.time_start = time.time()
-        res = transClient.addTransformation( self.transName, 'description', 'longDescription', 'MCSimulation', 'Standard','Manual', '' )
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.addTransformation( self.transName, 'description', 'longDescription', 'MCSimulation', 'Standard','Manual', '' )
+            if res['OK']==True:
+                print "((( THREAD ",self.id,"))) **** Trasformazione Creata ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time[self.pos_time] =  self.time_end -  self.time_start
         self.pos_time = self.pos_time +1
-        if res['OK']==True:
-            print "((( THREAD ",self.id,"))) **** Trasformazione creata ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Trasformazione non creata ####\033[1;m"
             print res['Message']
         self.transID = res['Value']
@@ -46,13 +56,23 @@ class stepOne(threading.Thread):
         for n in range( self.n_file ):
             self.lfns.append( "/aa/lfn." + str(n) + "." + str(self.id) + ".txt" )
         self.time_start = time.time()
-        res = transClient.addFilesToTransformation( self.transID, self.lfns )
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.addFilesToTransformation( self.transID, self.lfns )
+            if res['OK']==True:
+                print "((( THREAD ",self.id,"))) **** Creati ",self.n_file," File  ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time[self.pos_time] =  self.time_end -  self.time_start
         self.pos_time = self.pos_time +1
-        if res['OK']==True:
-            print "((( THREAD ",self.id,"))) **** Creati ",self.n_file," File  ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: File non creati ####\033[1;m"
             print res['Message']
         # Si mette la lista dei nomi dei file in coda alla lista lfns del main
@@ -69,12 +89,22 @@ class stepOne(threading.Thread):
         self.time_start = time.time()
         while( self.max <= self.n_file ):
             self.lfns_tmp = self.lfns[self.min:self.max]
-            res = transClient.addTaskForTransformation( self.transID, self.lfns_tmp )
-            if res['OK']==False:
+            error = 0
+            deadlock = 1
+            while (deadlock == 1):
+                res = transClient.addTaskForTransformation( self.transID, self.lfns_tmp )
+                if res['OK']==True:
+                    deadlock = 0
+                    self.n_task = self.n_task+1
+                else:
+                    if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                        deadlock = 1
+                    else:
+                        deadlock = 0
+                        error = 1
+            if (error == 1):
                 print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Task non creato ####\033[1;m"
                 print res['Message']
-            else:
-                self.n_task = self.n_task+1
             self.taskID.append(res['Value'])
             self.rand = random.randint(0,30)
             self.min = self.max
@@ -113,14 +143,24 @@ class stepTwo(threading.Thread):
             self.rand = random.randint(1,100)
         self.status = "Status_Modified_TH"+str(self.id)
         self.taskID_tmp = self.taskID[0:self.rand]
-        self.time_start = time.time() 
-        res = transClient.setTaskStatus(self.transID, self.taskID_tmp, self.status)
+        error = 0
+        deadlock = 1
+        self.time_start = time.time()
+        while (deadlock == 1):
+            res = transClient.setTaskStatus(self.transID, self.taskID_tmp, self.status)
+            if res['OK']==True:
+                print "((( THREAD ",self.id,"))) **** Stato di ",self.rand," Task settato a '",self.status,"' ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time[self.pos_time] =  self.time_end -  self.time_start
         self.pos_time = self.pos_time +1
-        if res['OK']==True:
-            print "((( THREAD ",self.id,"))) **** Stato di ",self.rand," Task settato a '",self.status,"' ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Stato del Task non settato ####\033[1;m"
             print res['Message']
 
@@ -131,12 +171,22 @@ class stepTwo(threading.Thread):
         self.newLFNsStatus = "Status_Modified_TH"+str(self.id)
         self.lfns_tmp = self.lfns[0:self.rand]
         self.time_start = time.time()
-        res = transClient.setFileStatusForTransformation( self.transID, self.newLFNsStatus, self.lfns_tmp )
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.setFileStatusForTransformation( self.transID, self.newLFNsStatus, self.lfns_tmp )
+            if res['OK']==True:
+                print "((( THREAD ",self.id,"))) **** Stato dei primi ",self.rand," File settato a '",self.newLFNsStatus,"' ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time[self.pos_time] =  self.time_end -  self.time_start
-        if res['OK']==True:
-            print "((( THREAD ",self.id,"))) **** Stato dei primi ",self.rand," File settato a '",self.newLFNsStatus,"' ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Stato dei File non modificati ####\033[1;m"
             print res['Message']
         self.n = self.id - 1
@@ -161,26 +211,46 @@ class stepThree(threading.Thread):
         self.time = [None]*4
         self.pos_time = 0
         self.time_start = time.time()
-        res = transClient.getTransformationStats(self.transID)
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.getTransformationStats(self.transID)
+            if res['OK']==True:
+                self.statusTransf = res['Value']
+                print "((( THREAD ",self.id,"))) **** Stato della Trasformazione recuperato ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time[self.pos_time] =  self.time_end -  self.time_start
         self.pos_time = self.pos_time +1
-        if res['OK']==True:
-            self.statusTransf = res['Value']
-            print "((( THREAD ",self.id,"))) **** Stato della Trasformazione recuperato ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Stato della Trasformazione impossibile da recuperare ####\033[1;m"
             print res['Message']
 
         self.time_start = time.time()
-        res = transClient.getTransformationTaskStats(self.transID)
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.getTransformationTaskStats(self.transID)
+            if res['OK']==True:
+                self.statusTask = res['Value']
+                print "((( THREAD ",self.id,"))) **** Stato del Task recuperato ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time[self.pos_time] =  self.time_end -  self.time_start
         self.pos_time = self.pos_time +1
-        if res['OK']==True:
-            self.statusTask = res['Value']
-            print "((( THREAD ",self.id,"))) **** Stato del Task recuperato ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Stato del Task impossibile da recuperare ####\033[1;m"
             print res['Message']
         self.n = self.id - 1
@@ -193,24 +263,44 @@ class stepThree(threading.Thread):
         self.newLFNsStatus = "Second_Modified"
         self.lfns_tmp = self.lfns[0:1]
         self.time_start = time.time()
-        res = transClient.setFileStatusForTransformation( self.transID, self.newLFNsStatus, self.lfns_tmp )
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.setFileStatusForTransformation( self.transID, self.newLFNsStatus, self.lfns_tmp )
+            if res['OK']==True:
+                print "((( THREAD ",self.id,"))) **** Stato di un File settato a '",self.newLFNsStatus,"' ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time[self.pos_time] =  self.time_end -  self.time_start
         self.pos_time = self.pos_time +1
-        if res['OK']==True:
-            print "((( THREAD ",self.id,"))) **** Stato di un File settato a '",self.newLFNsStatus,"' ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Stato del File non modificato per la seconda volta ####\033[1;m"
             print res['Message']
 
         self.time_start = time.time()
-        res = transClient.addTaskForTransformation( self.transID, self.f[0] )
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.addTaskForTransformation( self.transID, self.f[0] )
+            if res['OK']==True:
+                print "((( THREAD ",self.id,"))) **** Aggiunto un Task ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time[self.pos_time] =  self.time_end -  self.time_start
         self.pos_time = self.pos_time +1
-        if res['OK']==True:
-            print "((( THREAD ",self.id,"))) **** Aggiunto un Task ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Task non aggiunto ####\033[1;m"
             print res['Message']
         times_s3[self.n] = self.time
@@ -226,12 +316,22 @@ class stepFour(threading.Thread):
     def run(self):
         self.time = [None]*4
         self.time_start = time.time()
-        res = transClient.cleanTransformation( self.transID )
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.cleanTransformation( self.transID )
+            if res['OK']==True:
+                print "((( THREAD ",self.id,"))) **** Clean Transformation ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
         self.time_end = time.time()
         self.time = self.time_end -  self.time_start
-        if res['OK']==True:
-            print "((( THREAD ",self.id,"))) **** Clean Transformation ****"
-        else:
+        if (error == 1):
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Clean Transformation ####\033[1;m"
             print res['Message']
         self.n = self.id - 1
@@ -249,10 +349,20 @@ class stepFive(threading.Thread):
         #
         # Si elimina una trasformazione
         #
-        res = transClient.deleteTransformation( self.transID )
-        if res['OK']==True:
-            print "((( THREAD ",self.id,"))) **** Trasformazione eliminata ****"
-        else:
+        error = 0
+        deadlock = 1
+        while (deadlock == 1):
+            res = transClient.deleteTransformation( self.transID )
+            if res['OK']==True:
+                print "((( THREAD ",self.id,"))) **** Trasformazione eliminata ****"
+                deadlock = 0
+            else:
+                if (res["Message"] == "Execution failed.: ( 1213: Deadlock found when trying to get lock; try restarting transaction )"):
+                    deadlock = 1
+                else:
+                    deadlock = 0
+                    error = 1
+        if (error == 1):  
             print "((( THREAD ",self.id,"))) \033[1;31m#### ERROR: Trasformazione non eliminata ####\033[1;m"
             print res['Message']
 
@@ -421,6 +531,7 @@ if __name__ == "__main__":
         print "\n"
         print "((( THREAD ",i,")))"
         print "Time [Clear]: ",times_s4[i-1]," secondi"
+    time_tot_s = 0
     for i in range(0,len(times_s4)):
         time_tot_s = time_tot_s + times_s4[i]
     print "\n"
