@@ -470,7 +470,7 @@ if __name__ == "__main__":
     for r in range(0,N_TH_STEP_1):
         min_tmp = min[r]
         if ((min_tmp + N_TH_STEP_3) >= n_file[r]):
-            # Si verifica se (e quanti) File e' necessario creare per aggiungere un Task per una specifica Trasformazione
+            # Si verifica se (e quanti) File bisogna creare per aggiungere un Task per una specifica Trasformazione
             diff_file = ((min_tmp + N_TH_STEP_3) - n_file[r]) +1 
             # Si crea il numero giusto di File
             for i in range(0,diff_file):
