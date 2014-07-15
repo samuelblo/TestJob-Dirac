@@ -433,21 +433,21 @@ if __name__ == "__main__":
     # ----------------------------
     #           COSTANTI         
     # ----------------------------
-    MIN_FILE = 100
-    MAX_FILE = 100
+    MIN_FILE = 30000
+    MAX_FILE = 30000
     BLOCK_ADD_FILE = 10000
 
-    MIN_FILE_TO_TASK = 10
-    MAX_FILE_TO_TASK = 10
+    MIN_FILE_TO_TASK = 100
+    MAX_FILE_TO_TASK = 100
 
-    MIN_CHANGE_STATUS_TT = 2
-    MAX_CHANGE_STATUS_TT = 2
+    MIN_CHANGE_STATUS_TT = 90
+    MAX_CHANGE_STATUS_TT = 90
 
-    MIN_CHANGE_STATUS_FILE = 3
-    MAX_CHANGE_STATUS_FILE = 3
+    MIN_CHANGE_STATUS_FILE = 300
+    MAX_CHANGE_STATUS_FILE = 300
 
-    READ_TRANS_STATUS = 6
-    READ_TASK_STATUS = 7
+    READ_TRANS_STATUS = 6000
+    READ_TASK_STATUS = 7500
 
     N_TH_STEP_1 = 3
     N_TH_STEP_2 = 4
