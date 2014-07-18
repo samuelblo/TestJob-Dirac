@@ -54,7 +54,7 @@ class stepOne(threading.Thread):
         self.n_file = random.randint(MIN_FILE,MAX_FILE)
         print "((( THREAD ",self.id,"))) Sto creando ",self.n_file," File .... "
         self.lfns = []
-        # Si genera la lista con i nomi dei File da inserire
+        # Si genera la lista con i nomi dei File da assegnare alla Trasformazione
         for n in range( self.n_file ):
             #self.lfns.append( "/aa/lfn." + str(n) + "." + str(self.id) + ".txt" )
             self.lfns.append( "/aa/lfn." + str(n) + "." + str(self.id) + "." + str(self.uuid_str) + ".txt" )
@@ -62,14 +62,14 @@ class stepOne(threading.Thread):
         self.time_start = time.time()
         self.index_min = 0
         self.index_max = BLOCK_ADD_FILE
-        # Si controlla se BLOCK_ADD_FILE e' minore della grandella della lista dei nomi dei File
+        # Si controlla se BLOCK_ADD_FILE e' minore della grandezza della lista dei nomi dei File
         if (self.index_max < (len(self.lfns)-1)):
             # si entra nel ciclo while
             self.exit = 0
         else:
             # si salta il ciclo while
             self.exit = 1
-        # Si divide la lista con i nomi dei File in blocchi da BLOCK_ADD_FILE
+        # Si divide la lista con i nomi dei File in blocchi di [BLOCK_ADD_FILE] File
         while(self.exit == 0):
             self.deadlock = 1
             while (self.deadlock == 1):
